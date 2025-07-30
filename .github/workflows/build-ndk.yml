@@ -52,7 +52,7 @@ jobs:
  
       # Run the test to ensure validity
       - name: Run tests
-        run: ctest --test-dir build --verbose
+        run: ctest --test-dir build
   build:
     runs-on: ubuntu-latest
 
