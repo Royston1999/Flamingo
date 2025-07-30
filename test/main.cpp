@@ -342,6 +342,70 @@ static void test_neg_adrp() {
   }
 }
 
+static void test_stp_mov_bl_tbz() {
+  puts("Testing stp/mov/bl/tbz");
+  static uint8_t to_hook[]{ 0xfe, 0x4f, 0xbf, 0xa9, 0xf3, 0x03, 0x00, 0xaa, 0xed, 0xfd, 
+                            0xff, 0x97, 0xa0, 0x00, 0x00, 0x36, 0xe0, 0x03, 0x13, 0xaa };
+
+  // I HAVE NO IDEA WHAT I'M DOING SORRY
+  {
+    // TestWrapper init_hook(to_hook, "negative adrp");
+    // init_hook.expect_opc(ARM64_INS_CMP);
+    // init_hook.expect_opc(ARM64_INS_B);
+    // init_hook.expect_ops<ARM64_OP_REG, ARM64_OP_IMM>(ARM64_INS_ADRP, ARM64_REG_X8,
+    //                                                  ((int64_t)(&to_hook[0]) - 0x14E8000) & ~0xfff);
+    // init_hook.expect_opc(ARM64_INS_ADD);
+    // init_hook.expect_opc(ARM64_INS_LDR);
+  }
+  {
+    auto results = perform_near_hook_test(to_hook);
+    // TestWrapper fixup_validator(results.fixup_inst_destination.addr, "Near hook negative adrp");
+    // fixup_validator.expect_opc(ARM64_INS_CMP);
+    // // B is a near branch in this case
+    // fixup_validator.expect_opc(ARM64_INS_B);
+    // // ADRP is replaced with an ldr to load the data directly
+    // // LDR x8, DATA[0]
+    // fixup_validator.expect_ops<ARM64_OP_REG, ARM64_OP_IMM>(ARM64_INS_LDR, ARM64_REG_X8,
+    //                                                        round_up8(&results.fixup_inst_destination.addr[6]));
+    // fixup_validator.expect_opc(ARM64_INS_ADD);
+    // // Callback
+    // fixup_validator.expect_b(&results.target.addr[4]);
+    // // Data validation
+    // // ADRP result must match
+    // fixup_validator.expect_big_data(((int64_t)(results.target.addr.data()) - 0x14E8000) & ~0xfff);
+  }
+  {
+    auto results = perform_far_hook_test(to_hook);
+    // TestWrapper fixup_validator(results.fixup_inst_destination.addr, "Far hook negative adrp");
+    // fixup_validator.expect_opc(ARM64_INS_CMP);
+    // // b.hi past following b to ldr + br pair
+    // fixup_validator.expect_b(&results.fixup_inst_destination.addr[3]);
+    // // b over ldr + br pair
+    // fixup_validator.expect_b(&results.fixup_inst_destination.addr[5]);
+    // // LDR x17, DATA[0]
+    // fixup_validator.expect_ops<ARM64_OP_REG, ARM64_OP_IMM>(ARM64_INS_LDR, ARM64_REG_X17,
+    //                                                        round_up8(&results.fixup_inst_destination.addr[10]));
+    // fixup_validator.expect_ops<ARM64_OP_REG>(ARM64_INS_BR, ARM64_REG_X17);
+    // // ADRP is replaced with an ldr to load the data directly
+    // // LDR x9, DATA[1]
+    // fixup_validator.expect_ops<ARM64_OP_REG, ARM64_OP_IMM>(ARM64_INS_LDR, ARM64_REG_X8,
+    //                                                        round_up8(&results.fixup_inst_destination.addr[12]));
+    // fixup_validator.expect_opc(ARM64_INS_ADD);
+    // // Callback
+    // fixup_validator.expect_ops<ARM64_OP_REG, ARM64_OP_IMM>(ARM64_INS_LDR, ARM64_REG_X17,
+    //                                                        round_up8(&results.fixup_inst_destination.addr[14]));
+    // fixup_validator.expect_ops<ARM64_OP_REG>(ARM64_INS_BR, ARM64_REG_X17);
+    // // Data validation
+    // // B.hi destination should match
+    // fixup_validator.expect_big_data((uint64_t)&results.target.addr[6]);
+    // // ADRP result must match
+    // fixup_validator.expect_big_data(((int64_t)(results.target.addr.data()) - 0x14E8000) & ~0xfff);
+    // // Check callback point is valid
+    // fixup_validator.expect_big_data(reinterpret_cast<uint64_t>(&results.target.addr[4]));
+  }
+  
+}
+
 // TODO: Test a case where we have a loop in the first 4 instructions
 // TODO: Test a case where we have an ldr literal that loads from within fixup range
 // TODO: Test a case with a negative adrp offset
