@@ -416,5 +416,6 @@ int main() {
   test_ldr_ldrb_tbnz_bl();
   test_adrp();
   test_neg_adrp();
+  test_stp_mov_bl_tbz();
   puts("ALL GOOD!");
 }
